@@ -62,9 +62,13 @@ python scripts/agnostic-agentic-dev-kit/adapt.py codex [--dry-run]
 - On Windows without Developer Mode (or admin), symlink creation is denied;
   `adapt.py` falls back to copying skills and says so in its output and final
   report — don't assume a symlink happened.
-- Known wart: the `## Memory` section in an agent body survives into the
-  generated Codex file but points at `.claude/agent-memory/`, which Codex does
-  not provision.
+- Agent memory is repointed at the target's own directory: `.claude/agent-memory/`
+  becomes `.codex/agent-memory/` for Codex, or `.agents/memory/` for a target
+  with no convention of its own. Memory needs no platform feature — the agent
+  just reads and writes the directory with its file tools — so the path only has
+  to be consistent. `adapt.py` **fails loud** if the source wording changes
+  enough that the rewrite stops matching, rather than shipping an agent pointed
+  at a directory the target never provisions.
 - The Codex skills path (`~/.agents/skills`) is per official OpenAI docs; it
   has **not** been verified against an installed `codex` on this machine. If
   Codex doesn't pick up skills there, check your installed version's actual

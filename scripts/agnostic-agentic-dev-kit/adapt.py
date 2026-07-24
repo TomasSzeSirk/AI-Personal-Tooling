@@ -80,12 +80,40 @@ def emit_codex(fields: dict[str, str], body: str, path: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+# Agent bodies tell the agent to read/write a per-project memory directory. That
+# needs no platform feature — the agent just uses its file tools — so the path is
+# ours to pick per target. It only has to be consistent and not collide.
+DEFAULT_MEMORY_ROOT = ".agents/memory/"
+_CLAUDE_MEMORY_ROOT = ".claude/agent-memory/"
+
+
+def rewrite_memory(body: str, memory_root: str, path: str) -> str:
+    """Repoint a Claude agent's memory prose at the target CLI's directory.
+
+    Also drops the `memory: project` reference, since emit_* strips that
+    frontmatter field and no other CLI has it.
+    """
+    body = body.replace("`memory: project` — writes go to", "Writes go to")
+    body = body.replace(_CLAUDE_MEMORY_ROOT, memory_root)
+    # Fail loud rather than shipping an agent pointed at a directory the target
+    # never provisions: if the source prose is reworded, these literals stop
+    # matching and the rewrite silently does nothing.
+    for leftover in (".claude/", "memory: project"):
+        if leftover in body:
+            raise AdaptError(
+                f"{path}: Claude-specific memory reference {leftover!r} survived the "
+                f"rewrite — update rewrite_memory() to match the current wording"
+            )
+    return body
+
+
 TARGETS = {
     "codex": {
         "skills": pathlib.Path("~/.agents/skills").expanduser(),
         "agents": pathlib.Path("~/.codex/agents").expanduser(),
         "ext": ".toml",
         "emit": emit_codex,
+        "memory": ".codex/agent-memory/",
     },
 }
 
@@ -135,6 +163,7 @@ def install(target_name: str, dry_run: bool) -> None:
             dest = target["agents"] / f"{stem}{target['ext']}"
             text = src.read_text(encoding="utf-8")
             fields, body = parse_agent(text, str(src))
+            body = rewrite_memory(body, target.get("memory", DEFAULT_MEMORY_ROOT), str(src))
             generated = target["emit"](fields, body, str(src))
             if dry_run:
                 print(f"generate: {unit} -> {dest}")
@@ -265,6 +294,36 @@ body
         emitted = emit_codex(agent_fields, agent_body, str(agent_path))
         roundtripped = tomllib.loads(emitted)
         assert roundtripped["developer_instructions"] == agent_body + "\n", agent_path
+
+    memory_src = (
+        "## Memory\n\n"
+        "`memory: project` — writes go to this repo's `.claude/agent-memory/code-explorer/`.\n"
+    )
+    rewritten = rewrite_memory(memory_src, ".codex/agent-memory/", "x.md")
+    assert "`.codex/agent-memory/code-explorer/`" in rewritten
+    assert "Writes go to this repo's" in rewritten
+    assert ".claude/" not in rewritten
+    assert "memory: project" not in rewritten
+
+    assert rewrite_memory("no memory section here", DEFAULT_MEMORY_ROOT, "x.md")
+
+    try:
+        rewrite_memory("see `.claude/settings.json`", DEFAULT_MEMORY_ROOT, "x.md")
+        assert False, "expected AdaptError for an unrewritten .claude/ reference"
+    except AdaptError:
+        pass
+
+    # The invariant that matters: nothing Claude-specific about memory reaches a
+    # generated agent, for every real agent in the repo.
+    for agent_path in sorted((repo_root / "agents").glob("*.md")):
+        text = agent_path.read_text(encoding="utf-8")
+        agent_fields, agent_body = parse_agent(text, str(agent_path))
+        agent_body = rewrite_memory(agent_body, ".codex/agent-memory/", str(agent_path))
+        emitted = emit_codex(agent_fields, agent_body, str(agent_path))
+        assert ".claude/" not in emitted, agent_path
+        assert "memory: project" not in emitted, agent_path
+        assert ".codex/agent-memory/" in emitted, agent_path
+        tomllib.loads(emitted)
 
     print("self-test: OK")
 
