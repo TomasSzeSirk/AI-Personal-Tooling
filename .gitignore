@@ -1,3 +1,4 @@
 /docs/specs
 /docs/plans
 .claude/
+__pycache__/
