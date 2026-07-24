@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import os
 
-from okf.model import Node
-from okf.storage import write_if_changed
+from mapper.model import Node
+from mapper.storage import write_if_changed
 
 DOMAIN_INDEX_NAME = "_index.md"
 DOMAIN_INDEX_MARKER = "---\ntype: knowledge_graph_domain_index"

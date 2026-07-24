@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from okf.parsers import go, python, rust, typescript
+from mapper.parsers import go, python, rust, typescript
 
 _PARSERS = (rust, python, typescript, go)
 

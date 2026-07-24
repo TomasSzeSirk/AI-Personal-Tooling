@@ -7,9 +7,9 @@ import fnmatch
 import os
 from dataclasses import dataclass, field
 
-from okf.classify import domain as classify_domain
-from okf.parsers import for_ext
-from okf.storage import SKIP_DIRS
+from mapper.classify import domain as classify_domain
+from mapper.parsers import for_ext
+from mapper.storage import SKIP_DIRS
 
 
 @dataclass

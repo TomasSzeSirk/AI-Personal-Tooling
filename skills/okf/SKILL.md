@@ -18,7 +18,7 @@ lives) rather than improvising a map by hand.
 
 ## Step 2 — Regenerate
 
-Run `python scripts/okf/map.py` (add `--source`/`--output` if `okf.toml` sets
+Run `python scripts/okf/mapper/map.py` (add `--source`/`--output` if `okf.toml` sets
 non-default roots — otherwise it reads `okf.toml` on its own). This is
 deterministic, source-parsed, and cheap; there's no cache to go stale, so
 always regenerate before trusting the map, don't rely on a stale `docs/okf/`.

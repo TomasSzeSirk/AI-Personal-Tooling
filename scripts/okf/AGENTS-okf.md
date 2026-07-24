@@ -10,7 +10,7 @@ the whole repo. Drill into `{output}/<node>.md` for a single file's
 small — read the shard, not every file.
 
 There is no default hook regenerating this map. Regenerate manually (or via
-the `okf` skill) with `python scripts/okf/map.py --source {source} --output
+the `okf` skill) with `python scripts/okf/mapper/map.py --source {source} --output
 {output}`. Treat `⚠` flags as candidates for judgment, not verdicts.
 
 Each node carries a `defines` list — its public API surface (exported

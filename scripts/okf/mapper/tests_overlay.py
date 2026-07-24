@@ -23,9 +23,9 @@ import os
 import re
 from dataclasses import dataclass
 
-from okf.graph import build_index, resolve_dep
-from okf.model import Node
-from okf.storage import SKIP_DIRS
+from mapper.graph import build_index, resolve_dep
+from mapper.model import Node
+from mapper.storage import SKIP_DIRS
 
 _PY_TEST_FILE = re.compile(r"^(test_.*|.*_test)\.py$")
 _TS_TEST_FILE = re.compile(r"\.(test|spec)\.tsx?$")
@@ -73,7 +73,7 @@ def _rust_integration_tests(root: str, by_module: dict, tested: "dict[str, set[s
     """Sibling `tests/` dir next to `root`: the whole file is test code. It
     imports the crate by package name, so rewrite that to `crate::` before
     resolving (bit2's approach)."""
-    from okf.parsers import rust
+    from mapper.parsers import rust
 
     tests_dir = os.path.join(os.path.dirname(os.path.abspath(root.rstrip("/\\"))), "tests")
     if not os.path.isdir(tests_dir):

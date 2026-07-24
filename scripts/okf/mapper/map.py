@@ -12,27 +12,27 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Runnable directly as `python map.py` (dev) or `python scripts/okf/map.py`
-# (repo/vendored layout): put the parent of okf/ on sys.path so `okf` and
-# `okf.config` import the same way in both cases.
+# Runnable directly as `python map.py` (dev) or `python scripts/okf/mapper/map.py`
+# (repo/vendored layout): put the mapper/ package's parent (scripts/okf) on
+# sys.path so `mapper` and `mapper.config` import the same way in both cases.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from okf import __version__  # noqa: E402
-from okf import config  # noqa: E402
-from okf.classify import assign_layer  # noqa: E402
-from okf.config import ConfigError  # noqa: E402
-from okf.graph import resolve as resolve_graph  # noqa: E402
-from okf.model import Node, scan  # noqa: E402
-from okf.parsers import for_ext  # noqa: E402
-from okf.parsers import go as go_parser  # noqa: E402
-from okf.parsers import python as python_parser  # noqa: E402
-from okf.parsers import rust as rust_parser  # noqa: E402
-from okf.parsers import typescript as ts_parser  # noqa: E402
-from okf.policy import compile_policy  # noqa: E402
-from okf.prune import prune_orphans  # noqa: E402
-from okf.render import build_domain_index, build_index, write_domain_index, write_node  # noqa: E402
-from okf.storage import write_if_changed  # noqa: E402
-from okf import tests_overlay  # noqa: E402
+from mapper import __version__  # noqa: E402
+from mapper import config  # noqa: E402
+from mapper.classify import assign_layer  # noqa: E402
+from mapper.config import ConfigError  # noqa: E402
+from mapper.graph import resolve as resolve_graph  # noqa: E402
+from mapper.model import Node, scan  # noqa: E402
+from mapper.parsers import for_ext  # noqa: E402
+from mapper.parsers import go as go_parser  # noqa: E402
+from mapper.parsers import python as python_parser  # noqa: E402
+from mapper.parsers import rust as rust_parser  # noqa: E402
+from mapper.parsers import typescript as ts_parser  # noqa: E402
+from mapper.policy import compile_policy  # noqa: E402
+from mapper.prune import prune_orphans  # noqa: E402
+from mapper.render import build_domain_index, build_index, write_domain_index, write_node  # noqa: E402
+from mapper.storage import write_if_changed  # noqa: E402
+from mapper import tests_overlay  # noqa: E402
 
 
 def generate(
@@ -235,7 +235,7 @@ def _mk_node(rel: str, layer: "str | None", domain: str, depends_on: list) -> No
 def _self_test_policy() -> None:
     """One tiny node set per policy `kind`: assert forbidden edges are
     flagged and allowed edges are not."""
-    from okf.policy import compile_policy
+    from mapper.policy import compile_policy
 
     # --- assign_layer: first-match-wins glob, no rules/no match -> None ---
     rules = [
@@ -579,8 +579,16 @@ def _self_test_parsers() -> None:
 
 
 def _self_test_setup() -> None:
-    """Stage 6: setup.py vendors OKF into a target repo, idempotently."""
-    from okf import setup
+    """setup.py vendors OKF into a target repo, idempotently.
+
+    setup.py is scaffolding beside the mapper/ package, NOT vendored into
+    targets — so a vendored copy has no `setup` module. Skip this part there
+    rather than crash; the mapper self-test above is what a vendored copy needs.
+    """
+    try:
+        import setup  # scaffolding one level up (scripts/okf/setup.py), on sys.path
+    except ImportError:
+        return
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
@@ -601,9 +609,10 @@ def _self_test_setup() -> None:
         # and generates the map.
         result = setup.setup_target(target, ["src"], "docs/okf", with_hook=False, dry_run=False)
         assert result["status"] == "ok"
-        assert (target / "scripts" / "okf" / "map.py").is_file()
-        assert (target / "scripts" / "okf" / "parsers" / "python.py").is_file()
+        assert (target / "scripts" / "okf" / "mapper" / "map.py").is_file()
+        assert (target / "scripts" / "okf" / "mapper" / "parsers" / "python.py").is_file()
         assert not (target / "scripts" / "okf" / "setup.py").exists()
+        assert not (target / "scripts" / "okf" / "mapper" / "setup.py").exists()
         assert not (target / "scripts" / "okf" / "AGENTS-okf.md").exists()
         assert (target / "okf.toml").is_file()
         agents_text = (target / "AGENTS.md").read_text(encoding="utf-8")
@@ -647,9 +656,10 @@ def _self_test_setup() -> None:
         except setup.SetupError:
             pass
 
-        # Vendoring into a target whose scripts/okf IS this source tree
+        # Vendoring into a target whose scripts/okf/mapper IS this source tree
         # (dogfooding this repo on itself) is a self-copy no-op, not a crash.
-        self_target = Path(__file__).resolve().parent.parent.parent
+        # repo root = mapper/ -> okf/ -> scripts/ -> repo (parents[3]).
+        self_target = Path(__file__).resolve().parents[3]
         actions = setup.vendor(self_target, dry_run=False)
         assert any("map.py" in a for a in actions)
 

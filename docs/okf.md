@@ -45,8 +45,9 @@ code enforcing a specific architecture — the policy is data, not code.
 python scripts/okf/setup.py --target <repo> [--source ...] [--output ...] [--with-hook] [--dry-run]
 ```
 
-- Copies the mapper (`map/model/config/classify/policy/graph/tests_overlay/
-  render/prune/storage.py` + `parsers/`) into `<target>/scripts/okf/`.
+- Copies the mapper package (`map/model/config/classify/policy/graph/
+  tests_overlay/render/prune/storage.py` + `parsers/`) into
+  `<target>/scripts/okf/mapper/`.
 - Writes `<target>/okf.toml` as a commented stub, only if absent — never
   clobbers a tuned config.
 - Injects an "Architecture Recall (OKF map)" section into `<target>/AGENTS.md`
@@ -91,9 +92,9 @@ no policy, no layers.
 ## Running the mapper directly
 
 ```
-python scripts/okf/map.py [--source ...] [--output ...] [--quiet] [--no-prune]
-python scripts/okf/map.py --self-test
-python scripts/okf/map.py --version
+python scripts/okf/mapper/map.py [--source ...] [--output ...] [--quiet] [--no-prune]
+python scripts/okf/mapper/map.py --self-test
+python scripts/okf/mapper/map.py --version
 ```
 
 `--self-test` runs the in-script `assert` suite covering config loading,
@@ -113,7 +114,7 @@ with `scripts/okf/install.ps1` (Windows) or `scripts/okf/install.sh`
 ## Regeneration is manual
 
 There is no default hook regenerating the map — it's manual or
-skill-driven (`python scripts/okf/map.py`, or invoke the `okf` skill). Add
+skill-driven (`python scripts/okf/mapper/map.py`, or invoke the `okf` skill). Add
 `--with-hook` at setup time only if you want a pre-commit hook doing it
 automatically.
 

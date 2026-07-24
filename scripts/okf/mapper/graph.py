@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import posixpath
 
-from okf.model import Node
+from mapper.model import Node
 
 _SPLIT = {
     "rust": "::",

@@ -10,14 +10,13 @@ import shutil
 import sys
 from pathlib import Path
 
-# Runnable directly as `python setup.py` (dev) or `python scripts/okf/setup.py`
-# (repo/vendored layout): put the parent of okf/ on sys.path so `okf` and
-# `okf.map` import the same way in both cases.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# setup.py sits beside the mapper/ package (scripts/okf/). Put scripts/okf on
+# sys.path so `from mapper import ...` resolves.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from okf import __version__  # noqa: E402
-from okf import config as config_mod  # noqa: E402
-from okf import map as map_mod  # noqa: E402
+from mapper import __version__  # noqa: E402
+from mapper import config as config_mod  # noqa: E402
+from mapper import map as map_mod  # noqa: E402
 
 
 class SetupError(Exception):
@@ -27,9 +26,9 @@ class SetupError(Exception):
 MARKER_START = "<!-- okf:start -->"
 MARKER_END = "<!-- okf:end -->"
 
-# Vendored as-is into <target>/scripts/okf/. setup.py, AGENTS-okf.md,
-# install.*, units.txt are intentionally excluded (this list names only what
-# gets copied).
+# The mapper package is vendored as-is into <target>/scripts/okf/mapper/. The
+# scaffolding beside it (setup.py, AGENTS-okf.md, install.*, okf.example.toml)
+# is intentionally NOT copied — this list names only the package modules.
 VENDOR_MODULES = [
     "__init__.py",
     "map.py",
@@ -46,8 +45,8 @@ VENDOR_MODULES = [
 
 
 def vendor(target: Path, dry_run: bool) -> list[str]:
-    src_dir = Path(__file__).resolve().parent
-    dest_dir = target / "scripts" / "okf"
+    src_dir = Path(__file__).resolve().parent / "mapper"
+    dest_dir = target / "scripts" / "okf" / "mapper"
     actions = []
 
     if not dry_run:
@@ -156,7 +155,7 @@ def add_hook(target: Path, source: list[str], output: str, dry_run: bool) -> lis
         "      - id: okf-map\n"
         "        name: okf map regen\n"
         "        language: system\n"
-        f"        entry: python scripts/okf/map.py --source {' '.join(source)} "
+        f"        entry: python scripts/okf/mapper/map.py --source {' '.join(source)} "
         f"--output {output} --quiet\n"
         "        pass_filenames: false\n"
     )

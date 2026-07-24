@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import os
 
-from okf.model import Node
-from okf.render import DOMAIN_INDEX_MARKER, DOMAIN_INDEX_NAME, NODE_MARKER
-from okf.storage import SKIP_DIRS
+from mapper.model import Node
+from mapper.render import DOMAIN_INDEX_MARKER, DOMAIN_INDEX_NAME, NODE_MARKER
+from mapper.storage import SKIP_DIRS
 
 
 def _prune_empty_dirs(output_path: str) -> None:
