@@ -7,7 +7,7 @@ from pathlib import Path
 
 from gemini_mcp import config as config_mod
 from gemini_mcp.config import ConfigError
-from gemini_mcp.errors import ResponseTimeout
+from gemini_mcp.errors import NotAuthenticated, ResponseTimeout, SelectorError
 
 
 class _BlockPlaywrightImport:
@@ -598,13 +598,133 @@ tools:
     print("self-test: OK")
 
 
+GEMINI_URL = "https://gemini.google.com"
+
+
+def _login_config() -> dict:
+    # login only needs a profile dir and a headed window — not a full tools
+    # config. Use the default profile dir so a first-time user can sign in
+    # before writing any config.yaml.
+    profile_dir = str(Path(config_mod.DEFAULTS["profile_dir"]).expanduser())
+    return {"profile_dir": profile_dir, "headless": False}
+
+
+async def _login() -> None:
+    from gemini_mcp import browser
+
+    closed = asyncio.Event()
+    try:
+        ctx = await browser.get_context(_login_config())
+        # Block until the user closes the window: closing it ends the browser
+        # and fires the context "close" event. Register BEFORE navigating so a
+        # close during goto isn't lost; Event.set persists, so a close racing
+        # the wait() below is still caught. (Only the context event — a page
+        # "close" would also fire if the user closed just the Gemini tab
+        # mid-sign-in, tearing the context down early.)
+        ctx.on("close", lambda *_: closed.set())
+
+        page = ctx.pages[0] if ctx.pages else await ctx.new_page()
+        await page.goto(GEMINI_URL)
+
+        print(
+            "Chromium is open. Sign into the dedicated Google account, then "
+            "CLOSE the window to finish.",
+            flush=True,
+        )
+
+        await closed.wait()
+    finally:
+        # Flush the profile to disk on every path, including a goto failure.
+        await browser.shutdown()
+
+
 def _cmd_login(args: argparse.Namespace) -> None:
-    raise NotImplementedError("login is implemented in a later stage")
+    asyncio.run(_login())
+
+
+_PROBE_SELECTORS = (
+    "PROMPT_EDITOR",
+    "SUBMIT_BUTTON",
+    "RESPONSE_CONTAINER",
+    "GENERATING_INDICATOR",
+    "LOGIN_WALL",
+)
+
+
+async def _probe(url: str, headless: bool) -> None:
+    from gemini_mcp import auth, browser, selectors
+
+    profile_dir = str(Path(config_mod.DEFAULTS["profile_dir"]).expanduser())
+    closed = asyncio.Event()
+    try:
+        ctx = await browser.get_context({"profile_dir": profile_dir, "headless": headless})
+        ctx.on("close", lambda *_: closed.set())
+        page = ctx.pages[0] if ctx.pages else await ctx.new_page()
+        await page.goto(url, wait_until="load")
+        await asyncio.sleep(2)  # let the SPA render before the first count
+
+        if await auth.is_login_wall(page):
+            print(
+                "WARNING: login wall — not authenticated. Run `login` first; "
+                "Gem selectors only resolve on a signed-in page.",
+                flush=True,
+            )
+        print(
+            "Probing. Type a prompt in the window and submit to watch "
+            "GENERATING_INDICATOR flip. Close the window to stop.",
+            flush=True,
+        )
+
+        while not closed.is_set():
+            parts = []
+            for name in _PROBE_SELECTORS:
+                sel = getattr(selectors, name)
+                if sel is None:
+                    parts.append(f"{name}=UNSET")
+                    continue
+                try:
+                    parts.append(f"{name}={await page.locator(sel).count()}")
+                except Exception:
+                    parts.append(f"{name}=ERR")
+            print("  " + "  ".join(parts), flush=True)
+            try:
+                await asyncio.wait_for(closed.wait(), timeout=1.5)
+            except asyncio.TimeoutError:
+                pass
+    finally:
+        await browser.shutdown()
+
+
+def _cmd_probe(args: argparse.Namespace) -> None:
+    asyncio.run(_probe(args.url, args.headless))
+
+
+async def _ask(tool_name: str, prompt: str) -> str:
+    from gemini_mcp import browser, session
+
+    cfg = config_mod.load()
+    tools = cfg["tools"]
+    if tool_name not in tools:
+        raise ConfigError(
+            f"unknown tool '{tool_name}'. Configured: {', '.join(tools)}"
+        )
+    gem_url = tools[tool_name]["gem_url"]
+    try:
+        return await session.run(cfg, gem_url, prompt)
+    finally:
+        # One-shot CLI: tear the browser down so the process exits cleanly.
+        await browser.shutdown()
+
+
+def _cmd_ask(args: argparse.Namespace) -> None:
+    print(asyncio.run(_ask(args.tool, args.prompt)))
 
 
 def _cmd_serve(args: argparse.Namespace) -> None:
-    config_mod.load()
-    raise NotImplementedError("serve is implemented in a later stage")
+    from gemini_mcp import server
+
+    cfg = config_mod.load()  # fail fast with ConfigError before opening stdio
+    server.build_server(cfg).run(transport="stdio")
 
 
 def main() -> int:
@@ -616,6 +736,20 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="command")
     subparsers.add_parser("login", help="interactively sign in and save the browser profile")
     subparsers.add_parser("serve", help="start the MCP server over stdio")
+    probe_p = subparsers.add_parser(
+        "probe", help="report which Gemini selectors match on a page (discovery tool)"
+    )
+    probe_p.add_argument("url", help="page or Gem URL to open in the saved profile")
+    probe_p.add_argument(
+        "--headless",
+        action="store_true",
+        help="run headless (default: headed, so you can type a prompt)",
+    )
+    ask_p = subparsers.add_parser(
+        "ask", help="send one prompt to a configured Gem and print the answer"
+    )
+    ask_p.add_argument("tool", help="a tool name from config.yaml (e.g. deep_research)")
+    ask_p.add_argument("prompt", help="the prompt to send")
 
     args = parser.parse_args()
 
@@ -628,6 +762,18 @@ def main() -> int:
             _cmd_login(args)
         except NotImplementedError as e:
             print(f"login: not implemented yet ({e})", file=sys.stderr)
+            return 1
+        return 0
+
+    if args.command == "probe":
+        _cmd_probe(args)
+        return 0
+
+    if args.command == "ask":
+        try:
+            _cmd_ask(args)
+        except (ConfigError, NotAuthenticated, ResponseTimeout, SelectorError) as e:
+            print(f"ask: {e}", file=sys.stderr)
             return 1
         return 0
 

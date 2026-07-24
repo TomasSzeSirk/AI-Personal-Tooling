@@ -12,6 +12,7 @@ repo root; each coherent collection is an **idea**, documented one-per-file in
 | `skills/` | Skill definitions (`<name>/SKILL.md`), by type — pooled across ideas. |
 | `agents/` | Subagent definitions (`<name>.md`), by type — pooled across ideas. |
 | `scripts/<idea>/` | Per-idea `install` + `validate` scripts (`.ps1` + `.sh`) and a `units.txt` manifest listing the skills/agents that idea owns. |
+| `mcp/<server>/` | MCP servers — a standard package per server (its own venv/deps), installed and registered per its docs rather than symlinked into `~/.claude/`. |
 | `docs/<idea>.md` | Detail for one idea — what it is, its units, how to use it. |
 | `docs/specs/`, `docs/plans/` | Working design specs and plans (gitignored). |
 
@@ -25,6 +26,7 @@ idea without duplication.
 | Idea | Summary | Docs |
 |------|---------|------|
 | Agnostic Agentic Dev Kit | Stack-agnostic `brainstorm → plan → implement → review` loop (5 skills + 6 subagents) usable in any repo. | [docs/agnostic-agentic-dev-kit.md](docs/agnostic-agentic-dev-kit.md) |
+| Gemini Web MCP | MCP server fronting Gemini Web Gems as tools — a second, web-grounded model inside your agent loop. | [docs/gemini-web-mcp.md](docs/gemini-web-mcp.md) |
 
 ## Install an idea
 

@@ -7,3 +7,7 @@ class ResponseTimeout(Exception):
 
 class SelectorError(Exception):
     """Raised when a Playwright selector fails to match the expected DOM."""
+
+
+class NotAuthenticated(Exception):
+    """Raised when Gemini shows a login wall — the profile has no live session."""
