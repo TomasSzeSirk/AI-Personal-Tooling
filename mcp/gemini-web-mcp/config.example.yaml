@@ -1,0 +1,19 @@
+# Copy this file to ~/.gemini_mcp/config.yaml and fill in your Gem URLs.
+# Create the Gems in Gemini Web first, then paste each Gem's URL below.
+
+profile_dir: ~/.gemini_mcp/profile
+headless: true
+response_timeout_s: 120
+tools:
+  design_review:
+    gem_url: https://gemini.google.com/gem/<id>
+    description: Architecture and design feedback
+  product_review:
+    gem_url: https://gemini.google.com/gem/<id>
+    description: Product and UX questions
+  documentation:
+    gem_url: https://gemini.google.com/gem/<id>
+    description: Documentation assistance
+  deep_research:
+    gem_url: https://gemini.google.com/gem/<id>
+    description: External research
