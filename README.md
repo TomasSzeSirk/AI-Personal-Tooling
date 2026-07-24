@@ -36,6 +36,12 @@ Run that idea's installer; it links (or copies) just that idea's units into
 
 Validate an idea's units with `scripts/<idea>/validate.{ps1,sh}`.
 
+For CLIs other than Claude Code (e.g. Codex), an idea may ship an `adapt.py`
+that installs its skills into that CLI's own directory and generates that
+CLI's agent format — see the Agnostic Agentic Dev Kit's
+[`adapt.py`](scripts/agnostic-agentic-dev-kit/adapt.py) usage in its
+[docs](docs/agnostic-agentic-dev-kit.md#use-from-other-clis).
+
 ## Adding a new idea
 
 1. Add its skills to `skills/` and agents to `agents/` (by type).

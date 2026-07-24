@@ -43,6 +43,36 @@ and links (or copies) just those into `~/.claude/`.
 After installing, invoke the skills by name (`brainstorm`, `explore`, `plan`,
 `implement`, `review`); the subagents are dispatched automatically by the skills.
 
+## Use from other CLIs
+
+`scripts/agnostic-agentic-dev-kit/adapt.py` adapts this idea's units for
+agentic CLIs other than Claude Code:
+
+```
+python scripts/agnostic-agentic-dev-kit/adapt.py codex [--dry-run]
+```
+
+- **Kimi CLI** needs nothing extra for skills — it already reads
+  `~/.claude/skills`, so `install.ps1`/`install.sh` above covers it.
+- **Skills are symlinked when the OS permits, and only then track source
+  edits** — in copy mode (see below) re-run `adapt.py` after editing a skill,
+  exactly like agents.
+  **Agents are generated TOML — re-run `adapt.py` after editing any
+  `agents/*.md`** for the change to reach `~/.codex/agents`.
+- On Windows without Developer Mode (or admin), symlink creation is denied;
+  `adapt.py` falls back to copying skills and says so in its output and final
+  report — don't assume a symlink happened.
+- Known wart: the `## Memory` section in an agent body survives into the
+  generated Codex file but points at `.claude/agent-memory/`, which Codex does
+  not provision.
+- The Codex skills path (`~/.agents/skills`) is per official OpenAI docs; it
+  has **not** been verified against an installed `codex` on this machine. If
+  Codex doesn't pick up skills there, check your installed version's actual
+  skills directory and adjust the `TARGETS` entry in `adapt.py`.
+- opencode and Kimi **agent** emitters are not implemented — opencode's skills
+  directory and Kimi's agent format are unverified, so `adapt.py` only
+  supports `codex` today.
+
 ## Validate
 
 `bash scripts/agnostic-agentic-dev-kit/validate.sh`
