@@ -1,56 +1,44 @@
-# Agnostic Agentic Dev Kit
+# AI Personal Tooling
 
-A self-contained, stack-agnostic set of Claude Code **skills** and **subagents**
-for general-purpose development. It provides a full
-`brainstorm → plan → implement → review` loop (with `explore` feeding brainstorm
-and plan) that works in **any** repository, in any language, without depending on
-the superpowers plugin. Every worker discovers the project's own conventions and
-test/lint/build commands at runtime — nothing is hard-coded to a stack.
+Personal repository of Claude Code tooling — **skills**, **subagents**, and (in
+time) **MCP servers** and **commands**. Files are organized **by type** at the
+repo root; each coherent collection is an **idea**, documented one-per-file in
+`docs/` and installed by its own per-idea installer under `scripts/`.
 
-## Components
+## Layout
 
-### Skills (workflows you invoke)
+| Path | Holds |
+|------|-------|
+| `skills/` | Skill definitions (`<name>/SKILL.md`), by type — pooled across ideas. |
+| `agents/` | Subagent definitions (`<name>.md`), by type — pooled across ideas. |
+| `scripts/<idea>/` | Per-idea `install` + `validate` scripts (`.ps1` + `.sh`) and a `units.txt` manifest listing the skills/agents that idea owns. |
+| `docs/<idea>.md` | Detail for one idea — what it is, its units, how to use it. |
+| `docs/specs/`, `docs/plans/` | Working design specs and plans (gitignored). |
 
-| Skill | Role |
-|-------|------|
-| `brainstorm` | Interactive: turn an idea into an approved design spec. Explore context → clarify one question at a time → weigh approaches → present design for approval → write spec to the working repo's `docs/specs/`. |
-| `explore` | Map/research unfamiliar code — trace flows, answer where/how. Read-only; fans out `code-explorer` subagents. |
-| `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. |
-| `implement` | Orchestrate a staged plan: one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD enforced. |
-| `review` | Verify (run the project's test/lint/build), then dispatch `code-reviewer` + `security-reviewer` on the diff and collate ranked findings. |
+Claude Code loads skills and agents flat by type from `~/.claude/`, so the
+by-type layout mirrors how they're consumed; ideas are a documentation- and
+install-level grouping, not a directory one. A unit can belong to more than one
+idea without duplication.
 
-### Subagents (cold workers, dispatched via the Agent tool)
+## Ideas
 
-| Subagent | Role |
-|----------|------|
-| `design-explorer` | Returns 2–3 solution approaches with trade-offs + a recommendation. |
-| `code-explorer` | Read-only research worker; returns findings, not file dumps. |
-| `stage-executor` | Builds one plan stage, tests-first, minimal diff. |
-| `plan-reviewer` | Judges a stage's diff vs the plan → `PASS` / `CODE_WRONG` / `PLAN_WRONG`. |
-| `code-reviewer` | Correctness + over-engineering + quality findings on a diff. |
-| `security-reviewer` | Trust-boundary / secrets / injection audit on a diff. |
+| Idea | Summary | Docs |
+|------|---------|------|
+| Agnostic Agentic Dev Kit | Stack-agnostic `brainstorm → plan → implement → review` loop (5 skills + 6 subagents) usable in any repo. | [docs/agnostic-agentic-dev-kit.md](docs/agnostic-agentic-dev-kit.md) |
 
-## Install
+## Install an idea
 
-Symlinks `skills/` and `agents/` into `~/.claude/`, so edits to this repo
-propagate everywhere and `git pull` updates all repos at once.
+Run that idea's installer; it links (or copies) just that idea's units into
+`~/.claude/`:
 
-- **Windows:** `pwsh -File install.ps1` (needs Developer Mode or admin for symlinks).
-- **macOS/Linux:** `bash install.sh`
+- **Windows:** `pwsh -File scripts/<idea>/install.ps1`
+- **macOS/Linux:** `bash scripts/<idea>/install.sh`
 
-After installing, invoke the skills by name (`brainstorm`, `explore`, `plan`,
-`implement`, `review`); the subagents are dispatched automatically by the skills.
+Validate an idea's units with `scripts/<idea>/validate.{ps1,sh}`.
 
-## Notes for consumers
+## Adding a new idea
 
-- `plan` writes to the **working** repo's `docs/plans/`, `brainstorm` to its
-  `docs/specs/`. The kit never edits a target repo's `.gitignore` — add
-  `docs/plans/` and `docs/specs/` there yourself if you want them uncommitted.
-- Agent memory is **per-project**: subagents write to the working repo's
-  `.claude/agent-memory/<agent>/` (via `memory: project`), shared through that
-  repo's git.
-
-## Validate
-
-`bash validate.sh` (or `pwsh -File validate.ps1`) checks every skill/agent file
-for complete frontmatter and the absence of stack-specific references.
+1. Add its skills to `skills/` and agents to `agents/` (by type).
+2. Create `scripts/<idea>/` with `units.txt` (paths it owns) + `install`/`validate`
+   scripts (copy an existing idea's — they read `units.txt`).
+3. Write `docs/<idea>.md` and add a row to the **Ideas** table above.
