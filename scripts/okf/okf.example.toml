@@ -1,0 +1,51 @@
+# OKF config — copy to your repo root as `okf.toml` (or let `setup.py` write a
+# stub). Every key is optional: with no config at all, OKF maps every source
+# file and groups by directory (domain = first dir under a source root).
+
+# Source roots to scan — a string or a list (multi-language repos list several).
+source = ["src"]
+
+# Where the map is written.
+output = "docs/okf"
+
+# Glob patterns to skip.
+ignore = ["**/generated/**"]
+
+# ---------------------------------------------------------------------------
+# Optional: assign an architecture LAYER to files (glob matched, first wins).
+# Without layer_rule, nodes have no layer and no policy can flag anything.
+# ---------------------------------------------------------------------------
+# [[layer_rule]]
+# glob  = "**/domain/**"
+# layer = "domain"
+# [[layer_rule]]
+# glob  = "**/adapters/**"
+# layer = "adapter"
+
+# ---------------------------------------------------------------------------
+# Optional: enforce a dependency POLICY — flags cross-layer leaks with ⚠.
+# kind is one of: inward | outward | downward | isolate | allowlist.
+# Pick ONE [policy] block. Any architecture reduces to one of these.
+# ---------------------------------------------------------------------------
+
+# Hexagonal / clean — dependencies point inward (adapter → service → … → domain,
+# domain depends on nothing):
+# [policy]
+# kind  = "inward"
+# order = ["domain", "port", "service", "adapter", "infra"]
+
+# Layered / MVC / n-tier — each layer may depend only on layers below it:
+# [policy]
+# kind  = "downward"
+# order = ["presentation", "application", "domain", "data"]
+
+# Package-by-feature / modular monolith — sibling domains may not depend on each
+# other, except layers named in `shared`:
+# [policy]
+# kind   = "isolate"
+# shared = ["shared", "common"]
+
+# Explicit allow-list — the escape hatch; each pair is [from_layer, to_layer]:
+# [policy]
+# kind  = "allowlist"
+# allow = [["adapter", "service"], ["adapter", "port"], ["service", "domain"]]

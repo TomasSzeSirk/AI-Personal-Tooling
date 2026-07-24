@@ -27,6 +27,7 @@ idea without duplication.
 |------|---------|------|
 | Agnostic Agentic Dev Kit | Stack-agnostic `brainstorm → plan → implement → review` loop (5 skills + 6 subagents) usable in any repo. | [docs/agnostic-agentic-dev-kit.md](docs/agnostic-agentic-dev-kit.md) |
 | Gemini Web MCP | MCP server fronting Gemini Web Gems as tools — a second, web-grounded model inside your agent loop. | [docs/gemini-web-mcp.md](docs/gemini-web-mcp.md) |
+| OKF | Language- and architecture-agnostic codebase mapper — pluggable parsers, a dependency digraph, and declarative cross-layer policy, vendorable into any repo. | [docs/okf.md](docs/okf.md) |
 
 ## Install an idea
 
