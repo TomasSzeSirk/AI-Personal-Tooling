@@ -1,0 +1,42 @@
+{
+  "internal-1": {
+    "A": "cold",
+    "B": "gold"
+  },
+  "internal-2": {
+    "A": "gold",
+    "B": "cold"
+  },
+  "internal-3": {
+    "A": "gold",
+    "B": "cold"
+  },
+  "rust-crates-io-identity": {
+    "A": "cold",
+    "B": "gold"
+  },
+  "rust-min-publish-age": {
+    "A": "gold",
+    "B": "cold"
+  },
+  "rust-try-trait-v2": {
+    "A": "cold",
+    "B": "gold"
+  },
+  "rust-msrv-resolver": {
+    "A": "cold",
+    "B": "gold"
+  },
+  "swift-registry-search": {
+    "A": "cold",
+    "B": "gold"
+  },
+  "swift-html-coverage": {
+    "A": "gold",
+    "B": "cold"
+  },
+  "swift-task-locals": {
+    "A": "gold",
+    "B": "cold"
+  }
+}
