@@ -4,8 +4,12 @@ A self-contained, stack-agnostic set of Claude Code **skills** and **subagents**
 for general-purpose development. Provides a full
 `brainstorm → plan → implement → review` loop (with `explore` feeding brainstorm
 and plan) that works in **any** repository, in any language, without depending on
-the superpowers plugin. Every worker discovers the project's own conventions and
-test/lint/build commands at runtime — nothing is hard-coded to a stack.
+the superpowers plugin. `debug` is an alternative entry point for the same loop:
+instead of turning an idea into a design spec, it turns a reported error into a
+confirmed root-cause diagnosis, written as a spec in the same shape — so it
+converges on the same `plan → implement → review` stages as `brainstorm` does.
+Every worker discovers the project's own conventions and test/lint/build
+commands at runtime — nothing is hard-coded to a stack.
 
 ## Components
 
@@ -14,6 +18,7 @@ test/lint/build commands at runtime — nothing is hard-coded to a stack.
 | Skill | Role |
 |-------|------|
 | `brainstorm` | Interactive: turn an idea into an approved design spec. Explore context → clarify one question at a time → weigh approaches → present design for approval → write spec to the working repo's `docs/specs/`. |
+| `debug` | Interactive: turn a reported error/log into a confirmed root-cause diagnosis. Collect the error → explore context → classify → dispatch `bug-diagnoser` → present diagnosis for confirmation → write it as a spec, same location as `brainstorm`. Alternative entry point for bugs instead of new features. |
 | `explore` | Map/research unfamiliar code — trace flows, answer where/how. Read-only; fans out `code-explorer` subagents. |
 | `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. |
 | `implement` | Orchestrate a staged plan: one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD enforced. |
@@ -24,6 +29,7 @@ test/lint/build commands at runtime — nothing is hard-coded to a stack.
 | Subagent | Role |
 |----------|------|
 | `design-explorer` | Returns 2–3 solution approaches with trade-offs + a recommendation. |
+| `bug-diagnoser` | Traces a reported error to its root cause with an evidence chain, not just where it surfaced. |
 | `code-explorer` | Read-only research worker; returns findings, not file dumps. |
 | `stage-executor` | Builds one plan stage, tests-first, minimal diff. |
 | `plan-reviewer` | Judges a stage's diff vs the plan → `PASS` / `CODE_WRONG` / `PLAN_WRONG`. |
@@ -40,8 +46,9 @@ and links (or copies) just those into `~/.claude/`.
   (needs Developer Mode or admin for live symlinks; otherwise it copies).
 - **macOS/Linux:** `bash scripts/agnostic-agentic-dev-kit/install.sh`
 
-After installing, invoke the skills by name (`brainstorm`, `explore`, `plan`,
-`implement`, `review`); the subagents are dispatched automatically by the skills.
+After installing, invoke the skills by name (`brainstorm`, `debug`, `explore`,
+`plan`, `implement`, `review`); the subagents are dispatched automatically by
+the skills.
 
 ## Use from other CLIs
 
@@ -86,9 +93,11 @@ references.
 
 ## Notes for consumers
 
-- `plan` writes to the **working** repo's `docs/plans/`, `brainstorm` to its
-  `docs/specs/`. The kit never edits a target repo's `.gitignore` — add
-  `docs/plans/` and `docs/specs/` there yourself if you want them uncommitted.
+- `plan` writes to the **working** repo's `docs/plans/`, `brainstorm` and
+  `debug` both to its `docs/specs/` (a confirmed diagnosis is written in the
+  same shape as a design spec, so `plan` needs no special-casing to consume
+  it). The kit never edits a target repo's `.gitignore` — add `docs/plans/`
+  and `docs/specs/` there yourself if you want them uncommitted.
 - Agent memory is **per-project**: subagents write to the working repo's
   `.claude/agent-memory/<agent>/` (via `memory: project`), shared through that
   repo's git.
