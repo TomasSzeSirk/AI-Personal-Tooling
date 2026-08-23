@@ -34,6 +34,17 @@ For the stage's behavior:
 
 Trivial one-liners with no branching are exempt from tests.
 
+## Code comments
+
+- Minimal. Only comment where the *why* isn't obvious from the code itself —
+  a non-obvious invariant, a workaround, a tricky algorithmic step.
+- Self-contained and technical: describe the logic/procedure in the file
+  itself, never by pointing elsewhere.
+- Never reference the spec, plan, stage name/number, issue, or ticket. A
+  comment must still make sense to someone who has never seen
+  `docs/specs/`/`docs/plans/` — those files can move or be deleted without
+  orphaning a comment.
+
 ## Scope discipline
 
 - Implement only this stage. No opportunistic fixes, renames, or refactors
