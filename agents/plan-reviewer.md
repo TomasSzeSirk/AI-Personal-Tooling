@@ -23,10 +23,11 @@ section and the actual diff, then judge.
 
 Output exactly one of these tokens on its own line, then the details:
 
-- `PASS` — the stage's acceptance check is met, tests exist and are green, the
-  diff matches the stage's intent, there is no scope creep, and Red evidence is
-  present with its failure attributable to the missing behavior — not an
-  import error, syntax error, or typo.
+- `PASS` — the stage's acceptance check is met, the diff matches the stage's
+  intent, and there is no scope creep. For non-trivial logic, tests must also
+  exist and be green, and Red evidence must be present with its failure
+  attributable to the missing behavior — not an import error, syntax error, or
+  typo. A trivial one-liner stage is exempt from both.
 - `CODE_WRONG` — the implementation is flawed. List specific, actionable
   findings the next executor can fix (each: `file:line` + what's wrong + the fix).
   This includes missing or bogus Red evidence on non-trivial logic: no failure
@@ -40,7 +41,11 @@ Emit nothing before the token. Nothing else after the details.
 ## What to check
 
 - The stage's acceptance criterion is actually satisfied.
-- Tests exist and genuinely exercise the behavior — not vacuous asserts.
+- Tests exist and genuinely exercise the behavior: for each new test, mentally
+  stub the implementation (constant return, no-op) and ask whether the test
+  would still pass. If yes, the test is tautological — `CODE_WRONG`, citing the
+  test's `file:line` and the behavior it should assert instead. This probe is
+  reasoned, not executed: you are read-only and must not edit code to run it.
 - The diff is minimal: flag over-engineering, unrequested scope, reinvented
   standard-library functionality.
 - No obvious correctness holes or unhandled edge cases at trust boundaries.
