@@ -22,7 +22,7 @@ commands at runtime — nothing is hard-coded to a stack.
 | `explore` | Map/research unfamiliar code — trace flows, answer where/how. Read-only; fans out `code-explorer` subagents. |
 | `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. Each stage names the spec requirement IDs it satisfies, and the plan is checked against its spec before handoff. |
 | `implement` | Orchestrate a staged plan: branch first, then one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD is enforced by outcome — the executor reports the failure output captured before the implementation existed, and `plan-reviewer` rejects a stage without it. |
-| `review` | Verify (run the project's test/lint/build), then dispatch `code-reviewer` + `security-reviewer` on the diff and collate ranked findings. |
+| `review` | Verify (run the project's test/lint/build), check the change set against its spec's requirements, then dispatch `code-reviewer` + `security-reviewer` on the diff and collate ranked findings. |
 
 ### Subagents (cold workers, dispatched via the Agent tool)
 
@@ -104,9 +104,11 @@ flowchart TD
         SR{{security-reviewer}}
     end
 
-    REV --> CR
-    REV --> SR
+    REV --> COV{"spec coverage — did the change<br/>deliver every requirement?"}
+    COV --> CR
+    COV --> SR
     RFIND[/"Ranked findings — developer decides what to fix"/]
+    COV --> RFIND
     CR --> RFIND
     SR --> RFIND
 ```

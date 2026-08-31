@@ -68,8 +68,13 @@ each stage, in order:
      the findings as fix instructions, then re-review. **Bounded to 2 retries;**
      after that, stop and escalate to the user with the findings.
    - `PLAN_WRONG` → patch the plan per the reviewer's proposed wording, then
-     dispatch a fresh executor and re-review. This counts against the 2-retry
-     bound.
+     re-check the patched stage against the spec — does it still cover the
+     requirements it claims, and does the new wording contradict the spec or
+     the repo's constitution? The plan the coherence gate approved is not the
+     plan you are now building; a patch that drifts from the spec is invisible
+     to every later stage review. Fix the **spec** first if the patch reveals
+     the spec was wrong. Then dispatch a fresh executor and re-review. This
+     counts against the 2-retry bound.
 4. **Confirm** the executor marked the stage `(IMPLEMENTED — awaiting review)`
    before you judged it, and that your own done marker replaced it after `PASS`.
 
