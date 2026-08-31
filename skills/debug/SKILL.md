@@ -46,7 +46,9 @@ looks obvious.
    covered by a regression test) to the working repo's
    `docs/specs/<topic>.md` (create the directory if absent; never edit the
    repo's `.gitignore`). This is the same location and shape `brainstorm`
-   writes to, so it needs no special handling downstream.
+   writes to, so it needs no special handling downstream. This spec needs no
+   requirement numbering — one root cause and one resolved state is a single
+   requirement, and an `R1` with no `R2` is ceremony.
 7. **Hand off** — invoke the `plan` skill on that spec to turn the confirmed
    diagnosis into a staged fix plan; `implement` and `review` then proceed
    exactly as they would for any other plan.

@@ -25,6 +25,8 @@ directory if absent). Never edit the repo's `.gitignore`.
 Order stages least → most complex, 3–7 of them. Each stage has:
 
 - **Goal** — the concrete outcome.
+- **Satisfies** — the requirement IDs (`R1, R2, …`) the stage covers; omit
+  this field when the source spec has no requirement IDs.
 - **Tasks** — numbered, actionable, granular enough to pick up without more
   questions.
 - **Affected files** — exact paths; mark new ones `(new)`.
