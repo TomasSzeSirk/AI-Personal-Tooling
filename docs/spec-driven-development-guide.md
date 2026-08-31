@@ -225,11 +225,13 @@ SDD captures complete product intent but doesn't, by itself, *prove* the generat
 
 This isn't a bolt-on. Spec Kit's own methodology bakes test-first thinking directly into the spec: acceptance scenarios in the specification become tests, and the constitution can make TDD non-negotiable. In Spec Kit's reference constitution, the **Test-First Imperative** states that no implementation code is written before (1) tests are written, (2) tests are reviewed and approved, and (3) tests are confirmed to *fail* (the Red phase). This inverts naive AI code generation: instead of generating code and hoping it works, the agent first generates comprehensive tests that define behavior, gets them approved, and only then generates implementation to make them pass.
 
+**The counter-evidence.** The Test-First Imperative is what Spec Kit prescribes, not a settled result. Birgitta Böckeler ran a controlled comparison of agentic TDD against a non-TDD baseline and found no discernible difference in code quality between them — a null result on the exact claim the Imperative rests on. The failure modes agent TDD introduces (skipped Red, tautological tests written and satisfied by the same context, over-implementation) and what does and doesn't survive that null result are covered in full in `docs/test-driven-agentic-development.md`; read it before adopting the Imperative as-is.
+
 ### How to integrate TDD into the SDD pipeline
 
-The cleanest integration point is between planning and implementation, enforced by the constitution and the task list:
+The cleanest integration point is between planning and implementation, enforced by the constitution and the task list. Test-first is one option here, not the only structurally sound one — treat the following as a description of how Spec Kit wires it in, with a known null result on whether step 1 pays for itself:
 
-1. **Encode test-first in the constitution.** Add an article requiring strict TDD, so every generated plan and task list respects it. This makes the discipline structural rather than optional.
+1. **Encode test-first in the constitution, if adopted.** Add an article requiring strict TDD, so every generated plan and task list respects it. This makes the discipline structural rather than optional — but see the counter-evidence above before treating it as a default choice, and prefer outcome checks (a stage fails if its tests pass against a stubbed implementation) over process instructions (the agent must write the test first), which the agent's own narration can't be trusted to have actually followed.
 
 2. **Derive test scenarios in the spec.** During `specify` and `clarify`, capture acceptance criteria as concrete, testable scenarios. Every requirement should be phrased so it can become a failing test. If it can't be tested, it isn't specified well enough.
 

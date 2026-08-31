@@ -223,6 +223,26 @@ python scripts/agnostic-agentic-dev-kit/adapt.py codex [--dry-run]
 in `units.txt` for complete frontmatter and the absence of stack-specific
 references.
 
+## Constitution
+
+Non-negotiables — test/lint/build commands and rules the loop must never
+violate — live in a `## Constitution` section of the *working* repo's own
+`CLAUDE.md` or `AGENTS.md` (not this repo's; this repo's `CLAUDE.md` is
+gitignored). It's already read by every worker that opens that file: `plan`,
+`stage-executor`, `plan-reviewer`, and `review` all start by reading
+`CLAUDE.md` / `AGENTS.md` for conventions before doing anything else — a
+`## Constitution` section is just content within the file they already read,
+not a new mechanism.
+
+**Framing rule: state outcomes, not process.** Write "a stage fails if its
+tests pass against a stubbed implementation" or "acceptance checks must be
+executable," not "the agent must write the test first." An outcome is
+something a reviewer can check against the diff and the test transcript; a
+process instruction only produces the agent's own narration of having
+followed it, which isn't verifiable. See
+`docs/test-driven-agentic-development.md` for why — process prescriptions in
+the constitution were considered and rejected for this exact reason.
+
 ## Notes for consumers
 
 - `plan` writes to the **working** repo's `docs/plans/`, `brainstorm` and
