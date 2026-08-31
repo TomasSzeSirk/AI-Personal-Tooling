@@ -116,7 +116,7 @@ flowchart TD
 | Artifact | Written by | Why it matters |
 |----------|-----------|-----------------|
 | `docs/specs/<topic>.md` | `brainstorm` (design) or `debug` (confirmed diagnosis) | `plan` treats this as ground truth — a wrong or unapproved spec produces a plan for the wrong thing. Both skills gate on your approval/confirmation before writing it. |
-| `docs/plans/<topic>.md` | `plan` | The stage-by-stage contract `stage-executor` and `plan-reviewer` build and judge against. Read it before `implement` runs — everything after this point is largely automated. |
+| `docs/plans/<topic>.md` | `plan` | The stage-by-stage contract `stage-executor` and `plan-reviewer` build and judge against. Read it before `implement` runs — everything after this point is largely automated. Its stage markers also record progress: `(IMPLEMENTED — awaiting review)` is code no reviewer has judged yet, `(DONE — date)` passed review and was committed. |
 | One commit per passed stage | `implement` (after `plan-reviewer` returns `PASS`) | The actual reviewable diff — `implement` relays pass/retry/escalation status, but the commit itself is what to read. |
 | Escalation report (in-conversation, not a file) | `implement`, after 2 failed retries on one stage | The bounded fix-or-redispatch loop gave up — this needs your judgment call, not another automatic retry. |
 | Ranked findings (in-conversation, not a file) | `review` (`code-reviewer` + `security-reviewer`, collated) | Read-only — nothing is auto-fixed. You decide which findings to act on. |

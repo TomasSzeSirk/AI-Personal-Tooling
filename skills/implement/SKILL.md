@@ -32,6 +32,22 @@ repo's default branch.
    change, or an existing branch that may or may not be the right one.
 4. Create it from the current branch and report the name before stage 1.
 
+## Resuming a part-built plan
+
+A plan handed to you directly may already be part-built — you are often not the
+session that wrote it. The stage markers say what actually happened, so read
+them before dispatching anything:
+
+- **Unmarked** → not started. Dispatch an executor.
+- **`(IMPLEMENTED — awaiting review)`** → the code exists but no reviewer
+  judged it. Dispatch `plan-reviewer` on it first; do not re-implement, and do
+  not skip it as if it were finished.
+- **`(DONE — …)`** → passed review and was committed. Skip it.
+
+Resume at the first stage that isn't done. If the markers contradict the repo
+(a stage marked done with no matching commit, or uncommitted work under a done
+stage), say so and ask rather than guessing which is right.
+
 ## Per-stage loop
 
 Stages are **strictly sequential** — each depends on the ones before it. For
@@ -45,14 +61,17 @@ each stage, in order:
    `PLAN_WRONG`.
 3. **Branch on the verdict:**
    - `PASS` → commit this stage (implementation only, **not** the plan file),
-     then move to the next stage.
+     then replace the stage's `(IMPLEMENTED — awaiting review)` marker with
+     `(DONE — YYYY-MM-DD)` and move to the next stage. You own the done
+     marker; the executor never sets it.
    - `CODE_WRONG` → dispatch a **fresh** `stage-executor` for the same stage with
      the findings as fix instructions, then re-review. **Bounded to 2 retries;**
      after that, stop and escalate to the user with the findings.
    - `PLAN_WRONG` → patch the plan per the reviewer's proposed wording, then
      dispatch a fresh executor and re-review. This counts against the 2-retry
      bound.
-4. **Confirm** the executor marked the stage done in the plan file.
+4. **Confirm** the executor marked the stage `(IMPLEMENTED — awaiting review)`
+   before you judged it, and that your own done marker replaced it after `PASS`.
 
 ## Rules
 
