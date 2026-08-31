@@ -20,8 +20,8 @@ commands at runtime — nothing is hard-coded to a stack.
 | `brainstorm` | Interactive: turn an idea into an approved design spec. Explore context → clarify one question at a time → weigh approaches → present design for approval → write spec to the working repo's `docs/specs/`. |
 | `debug` | Interactive: turn a reported error/log into a confirmed root-cause diagnosis. Collect the error → explore context → classify → dispatch `bug-diagnoser` → present diagnosis for confirmation → write it as a spec, same location as `brainstorm`. Alternative entry point for bugs instead of new features. |
 | `explore` | Map/research unfamiliar code — trace flows, answer where/how. Read-only; fans out `code-explorer` subagents. |
-| `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. |
-| `implement` | Orchestrate a staged plan: one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD enforced. |
+| `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. Each stage names the spec requirement IDs it satisfies, and the plan is checked against its spec before handoff. |
+| `implement` | Orchestrate a staged plan: branch first, then one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD is enforced by outcome — the executor reports the failure output captured before the implementation existed, and `plan-reviewer` rejects a stage without it. |
 | `review` | Verify (run the project's test/lint/build), then dispatch `code-reviewer` + `security-reviewer` on the diff and collate ranked findings. |
 
 ### Subagents (cold workers, dispatched via the Agent tool)
@@ -51,6 +51,7 @@ flowchart TD
         L2{{Subagent}}
         L3[(File to read)]
         L4[/Developer checkpoint/]
+        L5{Automated gate}
     end
 
     subgraph FEATURE["New feature path"]
@@ -80,7 +81,10 @@ flowchart TD
     SPEC --> PLAN(plan)
     PLANFILE[("docs/plans/&lt;topic&gt;.md<br/>staged plan — read before implement")]
     PLAN --> PLANFILE
-    PLANFILE --> IMPL(implement)
+    PLANFILE --> GATE{"coherence gate — plan vs spec:<br/>coverage, invention, contradiction, testability"}
+    GATE -- "gaps" --> BS
+    GATE -- "passes" --> IMPL(implement)
+    IMPL --> BR[/"Confirm the branch name — stages commit onto it"/]
 
     subgraph STAGE["Per stage, sequential"]
         SE{{stage-executor}}
@@ -89,7 +93,7 @@ flowchart TD
         PR -- "CODE_WRONG or PLAN_WRONG (max 2 retries)" --> SE
     end
 
-    IMPL --> SE
+    BR --> SE
     PR -- PASS --> COMMIT[/"1 commit per passed stage — review the diff"/]
     COMMIT -- next stage --> SE
     PR -- retries exhausted --> ESC[/"Escalation — findings need manual intervention"/]

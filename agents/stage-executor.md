@@ -27,7 +27,9 @@ only that stage.
 For the stage's behavior:
 
 1. Write the failing test.
-2. Run it; confirm it fails for the right reason.
+2. Run it; confirm it fails for the right reason, and keep the failure
+   output verbatim — the report needs it, and re-running after the code
+   exists gives you a pass, not the Red.
 3. Write the minimal code to make it pass.
 4. Run the tests; confirm green.
 5. Refactor if it helps; tests stay green.
