@@ -1,9 +1,11 @@
 skills/brainstorm
+skills/debug
 skills/explore
 skills/plan
 skills/implement
 skills/review
 agents/design-explorer.md
+agents/bug-diagnoser.md
 agents/code-explorer.md
 agents/stage-executor.md
 agents/plan-reviewer.md
