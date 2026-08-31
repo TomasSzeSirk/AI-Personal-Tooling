@@ -59,7 +59,11 @@ Trivial one-liners with no branching are exempt from tests.
 - Mark the stage complete in the plan file, matching its existing style
   (`- [ ]` → `- [x]`, or prepend `✅`, or append `(DONE — YYYY-MM-DD)`).
 - Report: what you implemented (files touched), any deviations from the stage
-  and why, and open questions.
+  and why, open questions, and **Red evidence**.
+- Red evidence: the test command plus the verbatim failure output captured at
+  TDD-loop step 2, before any implementation existed. Trivial one-liners with
+  no branching are exempt, the same carve-out the TDD-loop section grants for
+  tests.
 
 ## Memory
 

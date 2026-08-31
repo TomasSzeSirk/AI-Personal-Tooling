@@ -24,9 +24,14 @@ section and the actual diff, then judge.
 Output exactly one of these tokens on its own line, then the details:
 
 - `PASS` — the stage's acceptance check is met, tests exist and are green, the
-  diff matches the stage's intent, and there is no scope creep.
+  diff matches the stage's intent, there is no scope creep, and Red evidence is
+  present with its failure attributable to the missing behavior — not an
+  import error, syntax error, or typo.
 - `CODE_WRONG` — the implementation is flawed. List specific, actionable
   findings the next executor can fix (each: `file:line` + what's wrong + the fix).
+  This includes missing or bogus Red evidence on non-trivial logic: no failure
+  output reported, or a reported failure caused by something other than the
+  absent behavior.
 - `PLAN_WRONG` — the stage itself is ambiguous, inconsistent, or infeasible.
   Give proposed corrected wording for the stage.
 
