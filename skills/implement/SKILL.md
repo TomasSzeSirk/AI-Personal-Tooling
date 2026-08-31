@@ -15,6 +15,23 @@ code yourself — your only direct actions are dispatching subagents, committing
 passed stages, and relaying outcomes. Read the plan end to end and create one
 todo per stage.
 
+## Branch first
+
+Stages commit as they pass, so land them on a branch — never straight onto the
+repo's default branch.
+
+1. **Skip this if the user already decided** — they named a branch, told you to
+   stay put, or the repo is already on a non-default branch that matches this
+   work.
+2. **Otherwise propose one**, derived from the plan's filename (a plan at
+   `docs/plans/user-auth.md` → branch `user-auth`), matching the naming style of
+   the repo's existing branches. Ask the user to confirm or rename it, and wait
+   for the answer before the first dispatch.
+3. **Ask outright** — one question, no guessing — when the name is genuinely
+   unclear: several plans in flight, a plan filename that doesn't describe the
+   change, or an existing branch that may or may not be the right one.
+4. Create it from the current branch and report the name before stage 1.
+
 ## Per-stage loop
 
 Stages are **strictly sequential** — each depends on the ones before it. For
