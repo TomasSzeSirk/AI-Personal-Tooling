@@ -243,6 +243,17 @@ followed it, which isn't verifiable. See
 `docs/test-driven-agentic-development.md` for why — process prescriptions in
 the constitution were considered and rejected for this exact reason.
 
+## Background reading
+
+Neither is required to use the kit; both explain why it is shaped this way.
+
+- `docs/spec-driven-development-guide.md` — spec-driven development: the
+  methodology `brainstorm` → `plan` → `implement` follows, and the Spec Kit
+  pipeline the skills map onto.
+- `docs/test-driven-agentic-development.md` — what the evidence actually
+  supports about TDD inside an agent loop, and which of its mechanisms this
+  kit adopts, rejects, or cannot apply to itself.
+
 ## Notes for consumers
 
 - `plan` writes to the **working** repo's `docs/plans/`, `brainstorm` and
