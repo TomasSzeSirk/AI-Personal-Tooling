@@ -232,8 +232,8 @@ enforcement literature's instinct is to write the discipline down as a rule
 argument against doing that: being overly specific about *how* a model
 should do something is not sustainable, because the agent's narration of
 having followed the process isn't trustworthy on its own. This kit's
-constitution convention (documented in Stage 6, see
-`docs/agnostic-agentic-dev-kit.md`) states outcomes instead — "a stage fails
+constitution convention (see `docs/agnostic-agentic-dev-kit.md`) states
+outcomes instead — "a stage fails
 if its tests pass against a stubbed implementation," "acceptance checks must
 be executable" — and leaves the *how* unconstrained. Red evidence and the
 stub probe are exactly this: outcome checks on what the diff and the test
