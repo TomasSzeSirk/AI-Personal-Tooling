@@ -72,9 +72,10 @@ each stage, in order:
      requirements it claims, and does the new wording contradict the spec or
      the repo's constitution? The plan the coherence gate approved is not the
      plan you are now building; a patch that drifts from the spec is invisible
-     to every later stage review. Fix the **spec** first if the patch reveals
-     the spec was wrong. Then dispatch a fresh executor and re-review. This
-     counts against the 2-retry bound.
+     to every later stage review. If the patch reveals the **spec** was wrong,
+     stop and ask the user — the spec is theirs, and you never edit it on your
+     own judgment. Then dispatch a fresh executor and re-review. This counts
+     against the 2-retry bound.
 4. **Confirm** the executor marked the stage `(IMPLEMENTED — awaiting review)`
    before you judged it, and that your own done marker replaced it after `PASS`.
 
@@ -84,3 +85,5 @@ each stage, in order:
 - One commit per passed stage, immediately after `PASS`.
 - Relay each stage's outcome (pass / retries / escalation) to the user — subagent
   reports are not visible to them otherwise.
+- Never edit the spec yourself. A stage review may show the spec is wrong; that
+  is a stop-and-ask, not a patch.
