@@ -4,11 +4,13 @@ A self-contained, stack-agnostic set of Claude Code **skills** and
 **subagents** for general-purpose development. Provides a full `dev-brainstorm
 → dev-plan → dev-implement → dev-review` loop (with `dev-explore` feeding
 brainstorm and plan) that works in **any** repository, in any language, without
-depending on the superpowers plugin. `dev-debug` is an alternative entry point
-for the same loop: instead of turning an idea into a design spec, it turns a
-reported error into a confirmed root-cause diagnosis, written as a spec in the
-same shape — so it converges on the same `dev-plan → dev-implement →
-dev-review` stages as `dev-brainstorm` does.
+depending on the superpowers plugin. `dev-specify` and `dev-debug` are
+alternative entry points to the same loop, differing only in what they start
+from: `dev-specify` takes an already-defined user story (objective, acceptance
+criteria, technical notes) and analyses it against the repo instead of
+designing it; `dev-debug` turns a reported error into a confirmed root-cause
+diagnosis. All three end by writing a spec in the same shape, so all three
+converge on the same `dev-plan → dev-implement → dev-review` stages.
 Every worker discovers the project's own conventions and test/lint/build
 commands at runtime — nothing is hard-coded to a stack.
 
@@ -19,6 +21,7 @@ commands at runtime — nothing is hard-coded to a stack.
 | Skill | Role |
 |-------|------|
 | `dev-brainstorm` | Interactive: turn an idea into an approved design spec. Explore context → clarify one question at a time → weigh approaches → present design for approval → write spec to the working repo's `docs/specs/`. |
+| `dev-specify` | Interactive: turn an already-defined user story into an approved spec. Collect the story (`As a / I want / so that`, acceptance criteria, technical notes) → explore the repo → analyse each criterion and note against it → resolve blocking ambiguities one question at a time → present the analysis for validation → write the spec, one `R` per acceptance criterion. Entry point for given requirements instead of open ideas. |
 | `dev-debug` | Interactive: turn a reported error/log into a confirmed root-cause diagnosis. Collect the error → explore context → classify → dispatch `bug-diagnoser` → present diagnosis for confirmation → write it as a spec, same location as `dev-brainstorm`. Alternative entry point for bugs instead of new features. |
 | `dev-explore` | Map/research unfamiliar code — trace flows, answer where/how. Read-only; fans out `code-explorer` subagents. |
 | `dev-plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. Each stage names the spec requirement IDs it satisfies, and the plan is checked against its spec before handoff. |
@@ -39,10 +42,16 @@ commands at runtime — nothing is hard-coded to a stack.
 
 ## Workflow
 
-Two entry points converge on the same build loop. `dev-brainstorm` starts from
-an idea, `dev-debug` starts from a reported error — both end by writing a
-spec-shaped file, and everything downstream (`dev-plan → dev-implement →
-dev-review`) doesn't care which one produced it.
+Three entry points converge on the same build loop. `dev-brainstorm` starts
+from an idea, `dev-specify` from an already-written user story, `dev-debug`
+from a reported error — all three end by writing a spec-shaped file, and
+everything downstream (`dev-plan → dev-implement → dev-review`) doesn't care
+which one produced it.
+
+Which one to reach for: if the requirement still has to be *decided*, that's
+`dev-brainstorm`. If it's already decided and written as acceptance criteria,
+that's `dev-specify` — its interactive work is analysis and ambiguity
+resolution, not design.
 
 ```mermaid
 flowchart TD
@@ -62,6 +71,14 @@ flowchart TD
         BS --> BSA --> BSG
     end
 
+    subgraph STORY["Defined user story path"]
+        SP("dev-specify")
+        SPA{{code-explorer}}
+        SPQ[/"Resolve blocking ambiguities"/]
+        SPG[/"Validate the analysis"/]
+        SP --> SPA --> SPQ --> SPG
+    end
+
     subgraph BUGFIX["Bug fix path"]
         DBG("dev-debug")
         DBGA{{bug-diagnoser}}
@@ -73,10 +90,12 @@ flowchart TD
     EXPA{{code-explorer}}
     EXP --> EXPA
     EXPA -. optional context .-> BS
+    EXPA -. optional context .-> SP
     EXPA -. optional context .-> DBG
 
-    SPEC[("docs/specs/&lt;topic&gt;.md<br/>design spec or confirmed diagnosis")]
+    SPEC[("docs/specs/&lt;topic&gt;.md<br/>design spec, analysed story,<br/>or confirmed diagnosis")]
     BSG --> SPEC
+    SPG --> SPEC
     DBGG --> SPEC
 
     SPEC --> PLAN("dev-plan")
@@ -118,7 +137,7 @@ flowchart TD
 
 | Artifact | Written by | Why it matters |
 |----------|-----------|-----------------|
-| `docs/specs/<topic>.md` | `dev-brainstorm` (design) or `dev-debug` (confirmed diagnosis) | `dev-plan` treats this as ground truth — a wrong or unapproved spec produces a plan for the wrong thing. Both skills gate on your approval/confirmation before writing it. |
+| `docs/specs/<topic>.md` | `dev-brainstorm` (design), `dev-specify` (analysed user story) or `dev-debug` (confirmed diagnosis) | `dev-plan` treats this as ground truth — a wrong or unapproved spec produces a plan for the wrong thing. All three skills gate on your approval/confirmation before writing it. |
 | `docs/plans/<topic>.md` | `dev-plan` | The stage-by-stage contract `stage-executor` and `plan-reviewer` build and judge against. Read it before `dev-implement` runs — everything after this point is largely automated. Its stage markers also record progress: `(IMPLEMENTED — awaiting review)` is code no reviewer has judged yet, `(DONE — date)` passed review and was committed. |
 | One commit per passed stage | `dev-implement` (after `plan-reviewer` returns `PASS`) | The actual reviewable diff — `dev-implement` relays pass/retry/escalation status, but the commit itself is what to read. |
 | Escalation report (in-conversation, not a file) | `dev-implement`, after 2 failed retries on one stage | The bounded fix-or-redispatch loop gave up — this needs your judgment call, not another automatic retry. |
@@ -140,6 +159,29 @@ by stage, then `dev-review` to get ranked findings before you merge.
 **Supervise:** the design sections in `dev-brainstorm`,
 `docs/plans/rate-limiting.md` before `dev-implement` starts, each stage's
 commit, and the final findings.
+
+### Defined user story from a ticket
+
+> "As a workspace admin, I want to revoke a member's API tokens, so that a
+> departing employee loses access immediately. AC: 1) revoking from the members
+> page invalidates every token of that member within one minute; 2) the member
+> sees a 401 with `token_revoked` on the next call; 3) the action is written to
+> the audit log. Technical notes: reuse the existing session-invalidation queue;
+> no schema change."
+
+`dev-specify` explores the token and audit code, then reports back per
+criterion: where each one lands, what already exists, and what has to change —
+plus a verdict on each technical note (the queue's delivery guarantee vs. the
+one-minute bound in AC 1, say). Ambiguities come one question at a time:
+*blocking* ones you must answer (does "every token" include refresh tokens?),
+*non-blocking* ones proposed as a default you can wave through. Once you
+validate that analysis, it writes `docs/specs/revoke-member-tokens.md` with one
+`R` per acceptance criterion, the technical notes as constraints, and the
+assumptions listed — then hands off to `dev-plan`, where each stage traces back
+to an `R` and so back to a criterion.
+
+**Supervise:** the analysis before it's written (that's the gate), then the
+plan/commits/findings as in the full loop.
 
 ### Bug fix from an error log
 
@@ -188,7 +230,8 @@ and links (or copies) just those into `~/.claude/`.
 
 After installing, invoke the skills by name — every one is prefixed `dev-` so
 it is unmistakable against Claude Code's own commands: `dev-brainstorm`,
-`dev-debug`, `dev-explore`, `dev-plan`, `dev-implement`, `dev-review`. The
+`dev-specify`, `dev-debug`, `dev-explore`, `dev-plan`, `dev-implement`,
+`dev-review`. The
 subagents are not prefixed and are dispatched automatically by the skills,
 never typed.
 
@@ -266,10 +309,11 @@ Neither is required to use the kit; both explain why it is shaped this way.
 
 ## Notes for consumers
 
-- `dev-plan` writes to the **working** repo's `docs/plans/`, `dev-brainstorm`
-  and `dev-debug` both to its `docs/specs/` (a confirmed diagnosis is written
-  in the same shape as a design spec, so `dev-plan` needs no special-casing to
-  consume it). The kit never edits a target repo's `.gitignore` — add
+- `dev-plan` writes to the **working** repo's `docs/plans/`; `dev-brainstorm`,
+  `dev-specify` and `dev-debug` all write to its `docs/specs/` (an analysed
+  story and a confirmed diagnosis are written in the same shape as a design
+  spec, so `dev-plan` needs no special-casing to consume either). The kit never
+  edits a target repo's `.gitignore` — add
   `docs/plans/` and `docs/specs/` there yourself if you want them uncommitted.
 - Agent memory is **per-project**: subagents write to the working repo's
   `.claude/agent-memory/<agent>/` (via `memory: project`), shared through that

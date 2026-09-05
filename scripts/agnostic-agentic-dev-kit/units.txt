@@ -1,4 +1,5 @@
 skills/dev-brainstorm
+skills/dev-specify
 skills/dev-debug
 skills/dev-explore
 skills/dev-plan

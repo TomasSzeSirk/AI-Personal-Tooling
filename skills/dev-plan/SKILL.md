@@ -6,7 +6,8 @@ description: Turn an intent or spec into a staged, testable implementation plan 
 # plan
 
 Use this when a feature or change is described in intent form (an idea, a spec,
-or the output of `dev-brainstorm`) and is ready to be broken into build stages.
+or the output of `dev-brainstorm` / `dev-specify`) and is ready to be broken
+into build stages.
 
 ## Discover first
 
@@ -55,7 +56,8 @@ plan is written and before handoff:
 - **Testability** — an acceptance check that can't be phrased as a failing
   test means the requirement is under-specified.
 
-Coverage or invention gaps route back to `dev-brainstorm`, not into the plan.
+Coverage or invention gaps route back to the skill that wrote the spec
+(`dev-brainstorm`, `dev-specify`, or `dev-debug`), not into the plan.
 Testability failures are fixed in the **spec**, not worked around in the
 plan.
 
