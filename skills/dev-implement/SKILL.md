@@ -1,5 +1,5 @@
 ---
-name: implement
+name: dev-implement
 description: Drive a staged plan to completion — one stage-executor subagent per stage, each judged by plan-reviewer, with a bounded fix-or-redispatch loop and one commit per passed stage. Orchestrator never writes code itself.
 ---
 

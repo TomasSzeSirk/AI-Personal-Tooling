@@ -1,5 +1,5 @@
 ---
-name: review
+name: dev-review
 description: Verify a change set then review it — run the project's test/lint/build commands, then dispatch code-reviewer and security-reviewer on the diff and collate ranked findings. No success claim without evidence.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: brainstorm
+name: dev-brainstorm
 description: Turn an idea into an approved design spec through interactive dialogue — explore context, clarify one question at a time, weigh approaches, present the design in sections for approval, then write the spec to the working repo's docs/specs/. Use before planning any non-trivial feature.
 ---
 
@@ -10,7 +10,7 @@ writing code.
 
 ## Hard gate
 
-Do **not** write code, scaffold, or hand off to `plan` until the user has
+Do **not** write code, scaffold, or hand off to `dev-plan` until the user has
 approved a presented design. This applies regardless of how simple the request
 seems — a short design is fine, but it must be presented and approved.
 
@@ -30,9 +30,9 @@ seems — a short design is fine, but it must be presented and approved.
    each section before moving on.
 5. **Write the spec** — save the approved design to the working repo's
    `docs/specs/<topic>.md` (create the directory if absent; never edit the
-   repo's `.gitignore`). Number its requirements `R1, R2, …` so `plan` can
+   repo's `.gitignore`). Number its requirements `R1, R2, …` so `dev-plan` can
    trace stages back to them.
-6. **Hand off** — invoke the `plan` skill to turn the spec into a staged plan.
+6. **Hand off** — invoke the `dev-plan` skill to turn the spec into a staged plan.
 
 ## Principles
 

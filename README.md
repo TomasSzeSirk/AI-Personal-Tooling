@@ -25,7 +25,7 @@ idea without duplication.
 
 | Idea | Summary | Docs |
 |------|---------|------|
-| Agnostic Agentic Dev Kit | Stack-agnostic dev loop usable in any repo — build a feature via `brainstorm → plan → implement → review`, or fix a bug via `debug → plan → implement → review`. | [docs/agnostic-agentic-dev-kit.md](docs/agnostic-agentic-dev-kit.md) |
+| Agnostic Agentic Dev Kit | Stack-agnostic dev loop usable in any repo — build a feature via `dev-brainstorm → dev-plan → dev-implement → dev-review`, or fix a bug via `dev-debug → dev-plan → dev-implement → dev-review`. | [docs/agnostic-agentic-dev-kit.md](docs/agnostic-agentic-dev-kit.md) |
 | Gemini Web MCP | MCP server fronting Gemini Web Gems as tools — a second, web-grounded model inside your agent loop. | [docs/gemini-web-mcp.md](docs/gemini-web-mcp.md) |
 | OKF | Language- and architecture-agnostic codebase mapper — pluggable parsers, a dependency digraph, and declarative cross-layer policy, vendorable into any repo. | [docs/okf.md](docs/okf.md) |
 

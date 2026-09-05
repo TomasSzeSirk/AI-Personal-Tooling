@@ -243,7 +243,7 @@ process.
 **The reflexive limit.** This kit cannot apply either mitigation to itself.
 Its own units — the skills and agents documented across
 `agents/stage-executor.md`, `agents/plan-reviewer.md`, and
-`skills/plan/SKILL.md` — are markdown prompts with no test harness; there is
+`skills/dev-plan/SKILL.md` — are markdown prompts with no test harness; there is
 no code to write a failing test against and no runtime to stub.
 `validate.sh` and `adapt.py --self-test` verify frontmatter and
 stack-neutrality only; every acceptance check in this repo's own plans is a

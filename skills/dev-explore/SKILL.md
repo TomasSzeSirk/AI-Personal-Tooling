@@ -1,5 +1,5 @@
 ---
-name: explore
+name: dev-explore
 description: Map and research a codebase — trace flows, answer where/how questions, understand unfamiliar code. Fans out read-only code-explorer subagents and synthesizes their findings. Re-runnable anytime, not a one-time setup.
 ---
 
