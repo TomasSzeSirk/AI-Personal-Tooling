@@ -16,8 +16,10 @@ seems — a short design is fine, but it must be presented and approved.
 
 ## Steps
 
-1. **Explore context** — read the relevant files, `README`, and recent commits
-   (optionally dispatch a `code-explorer` subagent) to ground the discussion.
+1. **Explore context** — read `CLAUDE.md` / `AGENTS.md`, the relevant files,
+   `README`, and recent commits (optionally dispatch a `code-explorer`
+   subagent) to ground the discussion in the repo's actual conventions and
+   constraints.
 2. **Clarify** — ask questions **one at a time**; prefer multiple-choice; focus
    on purpose, constraints, and success criteria. If the request spans multiple
    independent subsystems, flag it and suggest decomposing into sub-projects
