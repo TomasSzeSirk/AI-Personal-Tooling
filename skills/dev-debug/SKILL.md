@@ -1,17 +1,17 @@
 ---
-name: debug
+name: dev-debug
 description: Turn a reported error or error log into a confirmed root-cause diagnosis, then hand off to plan for a fix. Explore context → collect the error → classify and dispatch bug-diagnoser → present the diagnosis for approval → write it as a spec. Alternative entry point to the workflow for bugs instead of new features.
 ---
 
 # debug
 
-Use this instead of `brainstorm` when the starting point is broken behavior —
+Use this instead of `dev-brainstorm` when the starting point is broken behavior —
 an exception, a stack trace, a failing test, or "X should happen but Y
 happens" — rather than a new feature idea.
 
 ## Hard gate
 
-Do **not** write a fix, scaffold, or hand off to `plan` until the user has
+Do **not** write a fix, scaffold, or hand off to `dev-plan` until the user has
 confirmed the diagnosed root cause. A wrong diagnosis produces a plan that
 fixes the wrong thing — confirmation is not optional, even when the cause
 looks obvious.
@@ -45,12 +45,12 @@ looks obvious.
    evidence, and desired resolved state (the error no longer reproduces,
    covered by a regression test) to the working repo's
    `docs/specs/<topic>.md` (create the directory if absent; never edit the
-   repo's `.gitignore`). This is the same location and shape `brainstorm`
+   repo's `.gitignore`). This is the same location and shape `dev-brainstorm`
    writes to, so it needs no special handling downstream. This spec needs no
    requirement numbering — one root cause and one resolved state is a single
    requirement, and an `R1` with no `R2` is ceremony.
-7. **Hand off** — invoke the `plan` skill on that spec to turn the confirmed
-   diagnosis into a staged fix plan; `implement` and `review` then proceed
+7. **Hand off** — invoke the `dev-plan` skill on that spec to turn the confirmed
+   diagnosis into a staged fix plan; `dev-implement` and `dev-review` then proceed
    exactly as they would for any other plan.
 
 ## Principles
@@ -62,4 +62,4 @@ looks obvious.
   uncertainty and let the developer decide whether to confirm, investigate
   further, or reproduce first.
 - No fix code here — this skill only ends in a confirmed diagnosis and a
-  written spec; `plan`/`implement` own the actual fix.
+  written spec; `dev-plan`/`dev-implement` own the actual fix.

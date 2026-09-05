@@ -1,9 +1,10 @@
-skills/brainstorm
-skills/debug
-skills/explore
-skills/plan
-skills/implement
-skills/review
+skills/dev-brainstorm
+skills/dev-specify
+skills/dev-debug
+skills/dev-explore
+skills/dev-plan
+skills/dev-implement
+skills/dev-review
 agents/design-explorer.md
 agents/bug-diagnoser.md
 agents/code-explorer.md

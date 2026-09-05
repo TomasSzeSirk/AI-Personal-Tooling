@@ -1,12 +1,13 @@
 ---
-name: plan
+name: dev-plan
 description: Turn an intent or spec into a staged, testable implementation plan written to the working repo's docs/plans/. Each stage has a goal, tasks, affected files, an acceptance check, and a validation command. Ordered least-to-most complex.
 ---
 
 # plan
 
 Use this when a feature or change is described in intent form (an idea, a spec,
-or the output of `brainstorm`) and is ready to be broken into build stages.
+or the output of `dev-brainstorm` / `dev-specify`) and is ready to be broken
+into build stages.
 
 ## Discover first
 
@@ -47,7 +48,7 @@ When the plan derives from a spec in `docs/specs/`, run this gate after the
 plan is written and before handoff:
 
 - **Coverage** — every requirement in the spec maps to at least one stage;
-  list any orphans. On an unnumbered spec (the `debug` exemption), check
+  list any orphans. On an unnumbered spec (the `dev-debug` exemption), check
   coverage against the spec's prose requirements instead of IDs.
 - **Invention** — every stage traces to a requirement; list any extras.
 - **Contradiction** — plan choices that conflict with the spec or the repo's
@@ -55,11 +56,12 @@ plan is written and before handoff:
 - **Testability** — an acceptance check that can't be phrased as a failing
   test means the requirement is under-specified.
 
-Coverage or invention gaps route back to `brainstorm`, not into the plan.
+Coverage or invention gaps route back to the skill that wrote the spec
+(`dev-brainstorm`, `dev-specify`, or `dev-debug`), not into the plan.
 Testability failures are fixed in the **spec**, not worked around in the
 plan.
 
 ## Handoff
 
 Once the plan passes the coherence gate (skip the gate for plans with no
-source spec), the `implement` skill drives it stage-by-stage.
+source spec), the `dev-implement` skill drives it stage-by-stage.
