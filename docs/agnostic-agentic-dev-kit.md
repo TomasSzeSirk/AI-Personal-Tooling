@@ -228,6 +228,22 @@ and links (or copies) just those into `~/.claude/`.
   (needs Developer Mode or admin for live symlinks; otherwise it copies).
 - **macOS/Linux:** `bash scripts/agnostic-agentic-dev-kit/install.sh`
 
+### Into one project instead of `~/.claude`
+
+`install-local` writes the same units into a *project's* `.claude/` — use it to
+scope the kit to one working repo (Claude Code loads a project's `.claude/` on
+top of the user-wide one) or to hand the kit to a team along with the repo.
+
+- **Windows:** `pwsh -File scripts/agnostic-agentic-dev-kit/install-local.ps1 [-Target <dir>] [-Link] [-DryRun]`
+- **macOS/Linux:** `bash scripts/agnostic-agentic-dev-kit/install-local.sh [target-dir] [--link] [--dry-run]`
+
+The target defaults to the current directory. Unlike the `~/.claude` installer
+this one **copies** by default, so the target repo stays self-contained and the
+units can be committed there; pass `--link`/`-Link` to symlink back to this repo
+instead when you want edits here to propagate live (don't commit those links).
+Either way the destination units are replaced on each run, so re-running is how
+you pick up source edits in copy mode.
+
 After installing, invoke the skills by name — every one is prefixed `dev-` so
 it is unmistakable against Claude Code's own commands: `dev-brainstorm`,
 `dev-specify`, `dev-debug`, `dev-explore`, `dev-plan`, `dev-implement`,
