@@ -20,9 +20,9 @@ commands at runtime — nothing is hard-coded to a stack.
 | `brainstorm` | Interactive: turn an idea into an approved design spec. Explore context → clarify one question at a time → weigh approaches → present design for approval → write spec to the working repo's `docs/specs/`. |
 | `debug` | Interactive: turn a reported error/log into a confirmed root-cause diagnosis. Collect the error → explore context → classify → dispatch `bug-diagnoser` → present diagnosis for confirmation → write it as a spec, same location as `brainstorm`. Alternative entry point for bugs instead of new features. |
 | `explore` | Map/research unfamiliar code — trace flows, answer where/how. Read-only; fans out `code-explorer` subagents. |
-| `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. |
-| `implement` | Orchestrate a staged plan: one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD enforced. |
-| `review` | Verify (run the project's test/lint/build), then dispatch `code-reviewer` + `security-reviewer` on the diff and collate ranked findings. |
+| `plan` | Turn a spec/intent into a staged, testable plan in the working repo's `docs/plans/`. Each stage names the spec requirement IDs it satisfies, and the plan is checked against its spec before handoff. |
+| `implement` | Orchestrate a staged plan: branch first, then one `stage-executor` per stage, each judged by `plan-reviewer`, bounded fix-or-redispatch loop. TDD is enforced by outcome — the executor reports the failure output captured before the implementation existed, and `plan-reviewer` rejects a stage without it. |
+| `review` | Verify (run the project's test/lint/build), check the change set against its spec's requirements, then dispatch `code-reviewer` + `security-reviewer` on the diff and collate ranked findings. |
 
 ### Subagents (cold workers, dispatched via the Agent tool)
 
@@ -51,6 +51,7 @@ flowchart TD
         L2{{Subagent}}
         L3[(File to read)]
         L4[/Developer checkpoint/]
+        L5{Automated gate}
     end
 
     subgraph FEATURE["New feature path"]
@@ -80,7 +81,10 @@ flowchart TD
     SPEC --> PLAN(plan)
     PLANFILE[("docs/plans/&lt;topic&gt;.md<br/>staged plan — read before implement")]
     PLAN --> PLANFILE
-    PLANFILE --> IMPL(implement)
+    PLANFILE --> GATE{"coherence gate — plan vs spec:<br/>coverage, invention, contradiction, testability"}
+    GATE -- "gaps" --> BS
+    GATE -- "passes" --> IMPL(implement)
+    IMPL --> BR[/"Confirm the branch name — stages commit onto it"/]
 
     subgraph STAGE["Per stage, sequential"]
         SE{{stage-executor}}
@@ -89,7 +93,7 @@ flowchart TD
         PR -- "CODE_WRONG or PLAN_WRONG (max 2 retries)" --> SE
     end
 
-    IMPL --> SE
+    BR --> SE
     PR -- PASS --> COMMIT[/"1 commit per passed stage — review the diff"/]
     COMMIT -- next stage --> SE
     PR -- retries exhausted --> ESC[/"Escalation — findings need manual intervention"/]
@@ -100,9 +104,11 @@ flowchart TD
         SR{{security-reviewer}}
     end
 
-    REV --> CR
-    REV --> SR
+    REV --> COV{"spec coverage — did the change<br/>deliver every requirement?"}
+    COV --> CR
+    COV --> SR
     RFIND[/"Ranked findings — developer decides what to fix"/]
+    COV --> RFIND
     CR --> RFIND
     SR --> RFIND
 ```
@@ -112,7 +118,7 @@ flowchart TD
 | Artifact | Written by | Why it matters |
 |----------|-----------|-----------------|
 | `docs/specs/<topic>.md` | `brainstorm` (design) or `debug` (confirmed diagnosis) | `plan` treats this as ground truth — a wrong or unapproved spec produces a plan for the wrong thing. Both skills gate on your approval/confirmation before writing it. |
-| `docs/plans/<topic>.md` | `plan` | The stage-by-stage contract `stage-executor` and `plan-reviewer` build and judge against. Read it before `implement` runs — everything after this point is largely automated. |
+| `docs/plans/<topic>.md` | `plan` | The stage-by-stage contract `stage-executor` and `plan-reviewer` build and judge against. Read it before `implement` runs — everything after this point is largely automated. Its stage markers also record progress: `(IMPLEMENTED — awaiting review)` is code no reviewer has judged yet, `(DONE — date)` passed review and was committed. |
 | One commit per passed stage | `implement` (after `plan-reviewer` returns `PASS`) | The actual reviewable diff — `implement` relays pass/retry/escalation status, but the commit itself is what to read. |
 | Escalation report (in-conversation, not a file) | `implement`, after 2 failed retries on one stage | The bounded fix-or-redispatch loop gave up — this needs your judgment call, not another automatic retry. |
 | Ranked findings (in-conversation, not a file) | `review` (`code-reviewer` + `security-reviewer`, collated) | Read-only — nothing is auto-fixed. You decide which findings to act on. |
@@ -222,6 +228,37 @@ python scripts/agnostic-agentic-dev-kit/adapt.py codex [--dry-run]
 (or `pwsh -File scripts/agnostic-agentic-dev-kit/validate.ps1`) checks every unit
 in `units.txt` for complete frontmatter and the absence of stack-specific
 references.
+
+## Constitution
+
+Non-negotiables — test/lint/build commands and rules the loop must never
+violate — live in a `## Constitution` section of the *working* repo's own
+`CLAUDE.md` or `AGENTS.md` (not this repo's; this repo's `CLAUDE.md` is
+gitignored). It's already read by every worker that opens that file: `plan`,
+`stage-executor`, `plan-reviewer`, and `review` all start by reading
+`CLAUDE.md` / `AGENTS.md` for conventions before doing anything else — a
+`## Constitution` section is just content within the file they already read,
+not a new mechanism.
+
+**Framing rule: state outcomes, not process.** Write "a stage fails if its
+tests pass against a stubbed implementation" or "acceptance checks must be
+executable," not "the agent must write the test first." An outcome is
+something a reviewer can check against the diff and the test transcript; a
+process instruction only produces the agent's own narration of having
+followed it, which isn't verifiable. See
+`docs/test-driven-agentic-development.md` for why — process prescriptions in
+the constitution were considered and rejected for this exact reason.
+
+## Background reading
+
+Neither is required to use the kit; both explain why it is shaped this way.
+
+- `docs/spec-driven-development-guide.md` — spec-driven development: the
+  methodology `brainstorm` → `plan` → `implement` follows, and the Spec Kit
+  pipeline the skills map onto.
+- `docs/test-driven-agentic-development.md` — what the evidence actually
+  supports about TDD inside an agent loop, and which of its mechanisms this
+  kit adopts, rejects, or cannot apply to itself.
 
 ## Notes for consumers
 

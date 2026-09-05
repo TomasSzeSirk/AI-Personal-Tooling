@@ -25,6 +25,8 @@ directory if absent). Never edit the repo's `.gitignore`.
 Order stages least → most complex, 3–7 of them. Each stage has:
 
 - **Goal** — the concrete outcome.
+- **Satisfies** — the requirement IDs (`R1, R2, …`) the stage covers; omit
+  this field when the source spec has no requirement IDs.
 - **Tasks** — numbered, actionable, granular enough to pick up without more
   questions.
 - **Affected files** — exact paths; mark new ones `(new)`.
@@ -39,6 +41,25 @@ Order stages least → most complex, 3–7 of them. Each stage has:
 - Flag assumptions and open questions explicitly — never silently invent
   requirements.
 
+## Coherence gate
+
+When the plan derives from a spec in `docs/specs/`, run this gate after the
+plan is written and before handoff:
+
+- **Coverage** — every requirement in the spec maps to at least one stage;
+  list any orphans. On an unnumbered spec (the `debug` exemption), check
+  coverage against the spec's prose requirements instead of IDs.
+- **Invention** — every stage traces to a requirement; list any extras.
+- **Contradiction** — plan choices that conflict with the spec or the repo's
+  constitution.
+- **Testability** — an acceptance check that can't be phrased as a failing
+  test means the requirement is under-specified.
+
+Coverage or invention gaps route back to `brainstorm`, not into the plan.
+Testability failures are fixed in the **spec**, not worked around in the
+plan.
+
 ## Handoff
 
-Once the plan is written, the `implement` skill drives it stage-by-stage.
+Once the plan passes the coherence gate (skip the gate for plans with no
+source spec), the `implement` skill drives it stage-by-stage.

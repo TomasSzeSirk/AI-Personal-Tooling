@@ -27,7 +27,9 @@ only that stage.
 For the stage's behavior:
 
 1. Write the failing test.
-2. Run it; confirm it fails for the right reason.
+2. Run it; confirm it fails for the right reason, and keep the failure
+   output verbatim — the report needs it, and re-running after the code
+   exists gives you a pass, not the Red.
 3. Write the minimal code to make it pass.
 4. Run the tests; confirm green.
 5. Refactor if it helps; tests stay green.
@@ -56,10 +58,17 @@ Trivial one-liners with no branching are exempt from tests.
 
 ## Mark done and report
 
-- Mark the stage complete in the plan file, matching its existing style
-  (`- [ ]` → `- [x]`, or prepend `✅`, or append `(DONE — YYYY-MM-DD)`).
+- Mark the stage **implemented, awaiting review** in the plan file — append
+  `(IMPLEMENTED — awaiting review)` to its heading, matching the file's
+  existing style. Never mark a stage done: you cannot know whether it passes
+  review, and a stage you implemented can still come back `CODE_WRONG`. The
+  orchestrator sets the done marker after `plan-reviewer` passes it.
 - Report: what you implemented (files touched), any deviations from the stage
-  and why, and open questions.
+  and why, open questions, and **Red evidence**.
+- Red evidence: the test command plus the verbatim failure output captured at
+  TDD-loop step 2, before any implementation existed. Trivial one-liners with
+  no branching are exempt, the same carve-out the TDD-loop section grants for
+  tests.
 
 ## Memory
 

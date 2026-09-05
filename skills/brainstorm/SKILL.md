@@ -30,7 +30,8 @@ seems — a short design is fine, but it must be presented and approved.
    each section before moving on.
 5. **Write the spec** — save the approved design to the working repo's
    `docs/specs/<topic>.md` (create the directory if absent; never edit the
-   repo's `.gitignore`).
+   repo's `.gitignore`). Number its requirements `R1, R2, …` so `plan` can
+   trace stages back to them.
 6. **Hand off** — invoke the `plan` skill to turn the spec into a staged plan.
 
 ## Principles
