@@ -6,7 +6,8 @@ description: Drive a staged plan to completion — one stage-executor subagent p
 # implement
 
 Use this when a staged plan under `docs/plans/` is ready to build end to end with
-automated review instead of manual per-stage checkpoints.
+automated execution and review, pausing after each stage only for the user's
+manual sign-off on the result — not for design or review checkpoints.
 
 ## Role
 
@@ -27,15 +28,26 @@ stating a commit policy in its `CLAUDE.md` / `AGENTS.md`; read that as one of:
 - **`ask`** *(default)* — after each `PASS`, show the user the stage's diff
   summary and the commit message you propose, and wait for their approval
   before committing. A rejection is a stop-and-ask, not a retry.
-- **`auto`** — commit each passed stage without asking, then report what you
-  committed.
-- **`never`** — never commit. Leave the work in the tree and tell the user, at
-  each `PASS` and at the end, exactly which stages are uncommitted.
+- **`auto`** — commit each passed stage without asking, then show the user the
+  resulting commit (hash, message, `git show --stat`) and wait for their
+  acknowledgement before dispatching the next stage.
+- **`never`** — never commit. Leave the work in the tree, show the user the
+  current uncommitted changes for this stage (`git status` / `git diff`), and
+  wait for their acknowledgement before dispatching the next stage.
 
 Report the policy in effect before stage 1 whenever it is not the default, so
 the user knows what will happen without reading the config. If the repo's
 wording is ambiguous, ask once — do not guess your way into an unapproved
 commit.
+
+**Verification pause.** Whatever the policy, every stage ends in a hard pause
+before the next stage's executor is dispatched — this is a manual-verification
+checkpoint, not just a status report, so the user can catch problems before
+they compound across stages. What you show them depends on whether the stage
+landed a commit: a commit (`auto`, or `ask` once approved) means show the
+commit itself; no commit (`never`, or an `ask` still pending approval) means
+show the current working-tree changes. Either way, do not proceed until the
+user has actually responded — silence is not approval.
 
 ## Branch first
 
@@ -84,10 +96,11 @@ each stage, in order:
    `PLAN_WRONG`.
 3. **Branch on the verdict:**
    - `PASS` → commit this stage per the **commit policy** — implementation
-     only, **not** the plan file. Then replace the stage's `(IMPLEMENTED —
-     awaiting review)` marker with `(DONE — YYYY-MM-DD)` and move to the next
-     stage. You own the done marker; the executor never sets it, and it marks
-     the stage as *reviewed*, so set it under `never` too.
+     only, **not** the plan file. Replace the stage's `(IMPLEMENTED — awaiting
+     review)` marker with `(DONE — YYYY-MM-DD)`. You own the done marker; the
+     executor never sets it, and it marks the stage as *reviewed*, so set it
+     under `never` too. Then take the **verification pause** described above
+     and wait for the user's response before dispatching the next stage.
    - `CODE_WRONG` → dispatch a **fresh** `stage-executor` for the same stage with
      the findings as fix instructions, then re-review. **Bounded to 2 retries;**
      after that, stop and escalate to the user with the findings.
@@ -108,6 +121,9 @@ each stage, in order:
 - One **fresh, cold** subagent per attempt — never reuse contaminated context.
 - One commit per passed stage, immediately after `PASS` — never batch several
   stages into one commit, and never commit against the policy in effect.
+- Never dispatch a stage's executor before the previous stage's verification
+  pause has gotten a response — the pause exists for the user, not for you to
+  narrate past.
 - Relay each stage's outcome (pass / retries / escalation) to the user — subagent
   reports are not visible to them otherwise.
 - Never edit the spec yourself. A stage review may show the spec is wrong; that
